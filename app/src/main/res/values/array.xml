@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="sort_options">
+        <item>Filename</item>
+        <item>Time Edited (asc)</item>
+        <item>Time Edited (desc)</item>
+        <item>Size (asc)</item>
+        <item>Size (desc)</item>
+        <item>Type (asc)</item>
+        <item>Type (desc)</item>
+        <item>Modified</item>
+    </string-array>
+</resources>
