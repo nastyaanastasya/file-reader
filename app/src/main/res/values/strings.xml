@@ -1,3 +1,11 @@
 <resources>
-    <string name="app_name">File Reader</string>
+    <string name="app_name">File Explorer</string>
+
+    <string name="filename_example">Filename Example.pdf</string>
+    <string name="file_date_example">5/3/2023</string>
+    <string name="file_size_example">433 KB</string>
+
+    <string name="title_files">Files</string>
+    <string name="items_count_example">17</string>
+    <string name="items_count_title"> items in total</string>
 </resources>
