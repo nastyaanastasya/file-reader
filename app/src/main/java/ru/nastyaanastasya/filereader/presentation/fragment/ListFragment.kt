@@ -20,7 +20,6 @@ import kotlinx.coroutines.launch
 import ru.nastyaanastasya.filereader.R
 import ru.nastyaanastasya.filereader.databinding.FragmentListBinding
 import ru.nastyaanastasya.filereader.domain.model.ExternalFileDto
-import ru.nastyaanastasya.filereader.domain.model.ExternalSavedFileDto
 import ru.nastyaanastasya.filereader.presentation.rv.FileAdapter
 import ru.nastyaanastasya.filereader.presentation.rv.itemDecorator.SpaceItemDecorator
 import ru.nastyaanastasya.filereader.presentation.viewmodel.ExternalFileViewModel
@@ -103,13 +102,13 @@ class ListFragment : Fragment(R.layout.fragment_list) {
             }
         }
         viewLifecycleOwner.lifecycleScope.launch {
-            viewModel.modifiedFiles.collect { files ->
-                modifiedFiles = files
+            databaseViewModel.oldFiles.collect { oldFiles ->
+                viewModel.getModifiedFiles(oldFiles)
             }
         }
         viewLifecycleOwner.lifecycleScope.launch {
-            databaseViewModel.oldFiles.collect { oldFiles ->
-                loadModifiedFiles(oldFiles)
+            viewModel.modifiedFiles.collect { files ->
+                modifiedFiles = files
             }
         }
     }
@@ -225,10 +224,6 @@ class ListFragment : Fragment(R.layout.fragment_list) {
     private fun showModifiedFiles(modifiedFiles: List<ExternalFileDto>) {
         setLoading(true)
         updateData(modifiedFiles)
-    }
-
-    private fun loadModifiedFiles(savedFiles: List<ExternalSavedFileDto>) {
-        viewModel.getModifiedFiles(savedFiles)
     }
 
     private fun compareFiles() {
