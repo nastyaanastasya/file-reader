@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.ListAdapter
 import ru.nastyaanastasya.filereader.domain.model.ExternalFileDto
 
 class FileAdapter(
-    private val action: (String) -> Unit
+    private val action: (String, String) -> Unit
 ) : ListAdapter<ExternalFileDto, FileHolder>(FileDiffUtilsCallback()) {
 
     override fun onCreateViewHolder(

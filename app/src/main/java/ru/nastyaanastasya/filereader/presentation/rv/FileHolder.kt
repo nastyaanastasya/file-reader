@@ -10,7 +10,7 @@ import ru.nastyaanastasya.filereader.presentation.helper.FileIconHelper
 
 class FileHolder(
     private val binding: ItemFileBinding,
-    private val action: (String) -> Unit
+    private val action: (String, String) -> Unit
 ) : RecyclerView.ViewHolder(binding.root) {
 
     fun bind(item: ExternalFileDto) {
@@ -23,14 +23,14 @@ class FileHolder(
 
         }
         itemView.setOnClickListener {
-            action(item.path)
+            action(item.path, item.fileExtension.name)
         }
     }
 
     companion object {
         fun create(
             parent: ViewGroup,
-            action: (String) -> Unit
+            action: (String, String) -> Unit
         ) = FileHolder(
             ItemFileBinding.inflate(
                 LayoutInflater.from(parent.context),

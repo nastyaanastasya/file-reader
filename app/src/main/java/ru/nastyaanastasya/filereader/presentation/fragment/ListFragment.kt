@@ -1,17 +1,23 @@
 package ru.nastyaanastasya.filereader.presentation.fragment
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.webkit.MimeTypeMap
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import java.io.File
 import kotlinx.coroutines.launch
 import ru.nastyaanastasya.filereader.R
 import ru.nastyaanastasya.filereader.databinding.FragmentListBinding
@@ -41,7 +47,9 @@ class ListFragment : Fragment(R.layout.fragment_list) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = FragmentListBinding.bind(view)
-        fileAdapter = FileAdapter { openFile(it) }
+        fileAdapter = FileAdapter { path, ext ->
+            openFile(path, ext)
+        }
 
         initObservers()
         initList()
@@ -126,8 +134,20 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         setLoading(false)
     }
 
-    private fun openFile(path: String) {
-        // todo
+    private fun openFile(path: String, ext: String) {
+        requireContext().startActivity(
+            Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(
+                    FileProvider.getUriForFile(
+                        requireContext(),
+                        context?.applicationContext?.packageName + ".provider",
+                        File(path)
+                    ),
+                    MimeTypeMap.getSingleton().getMimeTypeFromExtension(ext)
+                )
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+        )
     }
 
     private fun allowAccess() {
