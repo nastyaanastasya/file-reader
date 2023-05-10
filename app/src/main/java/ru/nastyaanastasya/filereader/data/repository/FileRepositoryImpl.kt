@@ -3,19 +3,24 @@ package ru.nastyaanastasya.filereader.data.repository
 import android.os.Environment
 import java.io.File
 import javax.inject.Inject
+import ru.nastyaanastasya.filereader.data.util.ModifiedFilesUtil
 import ru.nastyaanastasya.filereader.domain.mapper.ModelMapper
 import ru.nastyaanastasya.filereader.domain.model.ExternalFileDto
+import ru.nastyaanastasya.filereader.domain.model.ExternalSavedFileDto
 import ru.nastyaanastasya.filereader.domain.repository.FileRepository
 
 private val PATH = Environment.getExternalStorageDirectory().absolutePath
 
 class FileRepositoryImpl @Inject constructor(
-    private val mapper: ModelMapper<File, ExternalFileDto>
+    private val mapper: ModelMapper<File, ExternalFileDto>,
+    private val modifiedFilesUtil: ModifiedFilesUtil
 ) : FileRepository {
 
     override suspend fun getFilesSortByName(): MutableList<ExternalFileDto> {
+        TempFiles.files = getRawFiles()
+
         return mapFiles(
-            getRawFiles().sortedBy {
+            TempFiles.files.sortedBy {
                 it.name
             }
         )
@@ -23,7 +28,7 @@ class FileRepositoryImpl @Inject constructor(
 
     override suspend fun getFilesSortBySizeAsc(): MutableList<ExternalFileDto> {
         return mapFiles(
-            getRawFiles().sortedBy {
+            TempFiles.files.sortedBy {
                 it.length()
             }
         )
@@ -31,7 +36,7 @@ class FileRepositoryImpl @Inject constructor(
 
     override suspend fun getFilesSortBySizeDesc(): MutableList<ExternalFileDto> {
         return mapFiles(
-            getRawFiles().sortedBy {
+            TempFiles.files.sortedBy {
                 it.length()
             }.reversed()
         )
@@ -39,7 +44,7 @@ class FileRepositoryImpl @Inject constructor(
 
     override suspend fun getFilesSortByDateAsc(): MutableList<ExternalFileDto> {
         return mapFiles(
-            getRawFiles().sortedBy {
+            TempFiles.files.sortedBy {
                 it.lastModified()
             }
         )
@@ -47,7 +52,7 @@ class FileRepositoryImpl @Inject constructor(
 
     override suspend fun getFilesSortByDateDesc(): MutableList<ExternalFileDto> {
         return mapFiles(
-            getRawFiles().sortedBy {
+            TempFiles.files.sortedBy {
                 it.lastModified()
             }.reversed()
         )
@@ -55,7 +60,7 @@ class FileRepositoryImpl @Inject constructor(
 
     override suspend fun getFilesSortByExtAsc(): MutableList<ExternalFileDto> {
         return mapFiles(
-            getRawFiles().sortedBy {
+            TempFiles.files.sortedBy {
                 it.extension
             }
         )
@@ -63,14 +68,16 @@ class FileRepositoryImpl @Inject constructor(
 
     override suspend fun getFilesSortByExtDesc(): MutableList<ExternalFileDto> {
         return mapFiles(
-            getRawFiles().sortedBy {
+            TempFiles.files.sortedBy {
                 it.extension
             }.reversed()
         )
     }
 
-    override suspend fun getModifiedFiles(): MutableList<ExternalFileDto> {
-        TODO("Not yet implemented")
+    override suspend fun getModifiedFiles(savedFiles: List<ExternalSavedFileDto>): MutableList<ExternalFileDto> {
+        return mapFiles(
+            modifiedFilesUtil.searchModifiedFiles(savedFiles, TempFiles.files)
+        )
     }
 
     private fun mapFiles(files: List<File>?): MutableList<ExternalFileDto> {
@@ -85,7 +92,7 @@ class FileRepositoryImpl @Inject constructor(
     }
 
     private fun getRawFiles(): List<File> {
-        return File(PATH).walkBottomUp().toList().filter {
+        return File(PATH).walkTopDown().toList().filter {
             it.isFile
         }.filterNot {
             it.name.startsWith(".")
@@ -93,4 +100,8 @@ class FileRepositoryImpl @Inject constructor(
             it.extension == ""
         }
     }
+}
+
+object TempFiles {
+    var files = listOf<File>()
 }

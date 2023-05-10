@@ -7,10 +7,10 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import ru.nastyaanastasya.filereader.data.database.converter.DateConverter
 import ru.nastyaanastasya.filereader.data.database.dao.ExternalFileDao
-import ru.nastyaanastasya.filereader.data.database.entity.ExternalFile
+import ru.nastyaanastasya.filereader.data.database.entity.ExternalSavedFile
 
 @Database(
-    entities = [ExternalFile::class],
+    entities = [ExternalSavedFile::class],
     version = 1
 )
 @TypeConverters(DateConverter::class)

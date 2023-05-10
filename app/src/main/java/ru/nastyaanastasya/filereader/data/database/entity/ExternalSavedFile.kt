@@ -5,8 +5,9 @@ import androidx.room.PrimaryKey
 import java.util.*
 
 @Entity(tableName = "file")
-data class ExternalFile(
-    @PrimaryKey val id: Int,
+data class ExternalSavedFile(
+    @PrimaryKey(autoGenerate = true)
+    val id: Int,
     val hashCode: String,
     val dateOfEditing: Date
 )

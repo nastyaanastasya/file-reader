@@ -8,13 +8,15 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import ru.nastyaanastasya.filereader.domain.model.ExternalFileDto
-import ru.nastyaanastasya.filereader.domain.usecase.GetFilesSortByDateAscUseCase
-import ru.nastyaanastasya.filereader.domain.usecase.GetFilesSortByDateDescUseCase
-import ru.nastyaanastasya.filereader.domain.usecase.GetFilesSortByExtAscUseCase
-import ru.nastyaanastasya.filereader.domain.usecase.GetFilesSortByExtDescUseCase
-import ru.nastyaanastasya.filereader.domain.usecase.GetFilesSortByNameUseCase
-import ru.nastyaanastasya.filereader.domain.usecase.GetFilesSortBySizeAscUseCase
-import ru.nastyaanastasya.filereader.domain.usecase.GetFilesSortBySizeDescUseCase
+import ru.nastyaanastasya.filereader.domain.model.ExternalSavedFileDto
+import ru.nastyaanastasya.filereader.domain.usecase.external.GetFilesSortByDateAscUseCase
+import ru.nastyaanastasya.filereader.domain.usecase.external.GetFilesSortByDateDescUseCase
+import ru.nastyaanastasya.filereader.domain.usecase.external.GetFilesSortByExtAscUseCase
+import ru.nastyaanastasya.filereader.domain.usecase.external.GetFilesSortByExtDescUseCase
+import ru.nastyaanastasya.filereader.domain.usecase.external.GetFilesSortByNameUseCase
+import ru.nastyaanastasya.filereader.domain.usecase.external.GetFilesSortBySizeAscUseCase
+import ru.nastyaanastasya.filereader.domain.usecase.external.GetFilesSortBySizeDescUseCase
+import ru.nastyaanastasya.filereader.domain.usecase.external.GetModifiedFilesUseCase
 
 @HiltViewModel
 class FileViewModel @Inject constructor(
@@ -24,11 +26,16 @@ class FileViewModel @Inject constructor(
     private val getFilesSortByDateAscUseCase: GetFilesSortByDateAscUseCase,
     private val getFilesSortByDateDescUseCase: GetFilesSortByDateDescUseCase,
     private val getFilesSortByExtAscUseCase: GetFilesSortByExtAscUseCase,
-    private val getFilesSortByExtDescUseCase: GetFilesSortByExtDescUseCase
+    private val getFilesSortByExtDescUseCase: GetFilesSortByExtDescUseCase,
+    private val getModifiedFilesUseCase: GetModifiedFilesUseCase
 ) : ViewModel() {
 
     private val _files = MutableStateFlow<List<ExternalFileDto>>(ArrayList<ExternalFileDto>())
     val files: StateFlow<List<ExternalFileDto>> = _files
+
+    private val _modifiedFiles =
+        MutableStateFlow<List<ExternalFileDto>>(ArrayList<ExternalFileDto>())
+    val modifiedFiles: StateFlow<List<ExternalFileDto>> = _modifiedFiles
 
     fun getFilesByName() {
         viewModelScope.launch {
@@ -96,6 +103,16 @@ class FileViewModel @Inject constructor(
                 getFilesSortByExtDescUseCase()
             }.onSuccess {
                 _files.value = it
+            }
+        }
+    }
+
+    fun getModifiedFiles(savedFiles: List<ExternalSavedFileDto>) {
+        viewModelScope.launch {
+            kotlin.runCatching {
+                getModifiedFilesUseCase(savedFiles)
+            }.onSuccess {
+                _modifiedFiles.value = it
             }
         }
     }

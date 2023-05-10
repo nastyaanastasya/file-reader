@@ -1,4 +1,4 @@
-package ru.nastyaanastasya.filereader.domain.usecase
+package ru.nastyaanastasya.filereader.domain.usecase.external
 
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineDispatcher

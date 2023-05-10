@@ -3,7 +3,6 @@ package ru.nastyaanastasya.filereader.presentation.fragment
 import android.Manifest
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
@@ -13,23 +12,24 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlin.math.log
 import kotlinx.coroutines.launch
 import ru.nastyaanastasya.filereader.R
 import ru.nastyaanastasya.filereader.databinding.FragmentListBinding
 import ru.nastyaanastasya.filereader.domain.model.ExternalFileDto
-import ru.nastyaanastasya.filereader.presentation.extension.hideLoading
-import ru.nastyaanastasya.filereader.presentation.extension.showLoading
+import ru.nastyaanastasya.filereader.domain.model.ExternalSavedFileDto
 import ru.nastyaanastasya.filereader.presentation.rv.FileAdapter
 import ru.nastyaanastasya.filereader.presentation.rv.itemDecorator.SpaceItemDecorator
+import ru.nastyaanastasya.filereader.presentation.viewmodel.ExternalFileViewModel
 import ru.nastyaanastasya.filereader.presentation.viewmodel.FileViewModel
 
 @AndroidEntryPoint
 class ListFragment : Fragment(R.layout.fragment_list) {
     private lateinit var binding: FragmentListBinding
     private lateinit var fileAdapter: FileAdapter
+    private lateinit var modifiedFiles: List<ExternalFileDto>
 
     private val viewModel: FileViewModel by viewModels()
+    private val databaseViewModel: ExternalFileViewModel by viewModels()
 
     private val permissionLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -48,6 +48,7 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         initRefreshAction()
         initSpinner()
         allowAccess()
+        compareFiles()
     }
 
     private fun initSpinner() {
@@ -91,8 +92,16 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.files.collect { files ->
                 updateData(files)
-                scrollToTop()
-                setLoading(false)
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewModel.modifiedFiles.collect { files ->
+                modifiedFiles = files
+            }
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            databaseViewModel.oldFiles.collect { oldFiles ->
+                loadModifiedFiles(oldFiles)
             }
         }
     }
@@ -113,6 +122,8 @@ class ListFragment : Fragment(R.layout.fragment_list) {
     private fun updateData(list: List<ExternalFileDto>) {
         binding.tvItemsCount.text = list.size.toString()
         fileAdapter.submitList(list)
+        scrollToTop()
+        setLoading(false)
     }
 
     private fun openFile(path: String) {
@@ -136,7 +147,7 @@ class ListFragment : Fragment(R.layout.fragment_list) {
             4 -> loadFilesBySizeDesc()
             5 -> loadFilesByExtAsc()
             6 -> loadFilesByExtDesc()
-            else -> loadModifiedFiles()
+            else -> showModifiedFiles(modifiedFiles)
         }
     }
 
@@ -175,8 +186,17 @@ class ListFragment : Fragment(R.layout.fragment_list) {
         viewModel.getFilesByExtDesc()
     }
 
-    private fun loadModifiedFiles() {
-        TODO("Not yet implemented")
+    private fun showModifiedFiles(modifiedFiles: List<ExternalFileDto>) {
+        setLoading(true)
+        updateData(modifiedFiles)
+    }
+
+    private fun loadModifiedFiles(savedFiles: List<ExternalSavedFileDto>) {
+        viewModel.getModifiedFiles(savedFiles)
+    }
+
+    private fun compareFiles() {
+        databaseViewModel.getOldFiles()
     }
 
     private fun requestPermission() {
